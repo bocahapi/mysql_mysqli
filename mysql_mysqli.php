@@ -8,8 +8,19 @@
  * this using http://us3.php.net/manual/en/ini.core.php#ini.auto-prepend-file
  * and then open /etc/php.d/mysql.ini to comment out the mysql extension.
  */
-
+ 
 if (!extension_loaded('mysql')) {
+
+	class MySQL_MySQLi_Connection extends mysqli {
+		private $last_result;
+
+		function real_query($q) {
+			if ($this->last_result && $this->last_result instanceof mysqli_result) $this->last_result->free();
+			$r = parent::real_query($q);
+			$this->last_result = $r;
+			return $r;
+		}
+	}
 
 	function &_mysql_get_connection($conn=false) {
 		if ($conn===false) return $GLOBALS['mysqli_connection'];
@@ -21,7 +32,7 @@ if (!extension_loaded('mysql')) {
 		if ($host===false) $host = ini_get("mysqli.default_host");
 		if ($user===false) $user = ini_get("mysqli.default_user");
 		if ($pw===false) $pw = ini_get("mysqli.default_pw");
-		$GLOBALS[$con_id] =& new mysqli($host,$user,$pw,$dbname);
+		$GLOBALS[$con_id] =& new MySQL_MySQLi_Connection($host,$user,$pw,$dbname);
 		$GLOBALS['mysqli_connection'] =& $GLOBALS[$con_id];
 		return $GLOBALS[$con_id];
 	}
