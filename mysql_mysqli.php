@@ -17,7 +17,7 @@ if (!extension_loaded('mysql')) {
 		function real_query($q) {
 			if ($this->last_result && $this->last_result instanceof mysqli_result) $this->last_result->free();
 			$r = parent::real_query($q);
-			$this->last_result = $r;
+			$this->last_result = $this->store_result();
 			return $r;
 		}
 	}
@@ -248,7 +248,7 @@ if (!extension_loaded('mysql')) {
 			error_log('SQL error: '.$db->error.' with '.$q);
 			return false;
 		} elseif ($db->field_count)
-			return $db->store_result();
+			return $db->last_result;
 		return true;
 	}
 
@@ -298,7 +298,7 @@ if (!extension_loaded('mysql')) {
 			error_log('SQL error: '.$db->error.' with '.$q);
 			return false;
 		} elseif ($db->field_count)
-			return $db->use_result();
+			return $db->last_result;
 		return true;
 	}
 
